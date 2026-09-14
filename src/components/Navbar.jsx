@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 
 import { useCart } from "@/context/CartContext";
+import Logo from "./Logo";
 
 export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -55,24 +56,9 @@ export default function Navbar() {
         <div className="flex h-20 items-center justify-between gap-5">
 
           {/* Logo */}
-          <Link
-            href="/"
-            className="group flex shrink-0 items-center gap-2"
-          >
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-green-600 text-xl shadow-md transition group-hover:scale-105">
-              🌱
-            </div>
-
-            <div>
-              <h1 className="text-2xl font-extrabold tracking-tight text-gray-900">
-                SMA<span className="text-green-600">GRO</span>
-              </h1>
-
-              <p className="-mt-1 text-[10px] font-medium tracking-[0.2em] text-gray-500">
-                SMART AGRICULTURE
-              </p>
-            </div>
-          </Link>
+          <div className="flex items-center">
+  <Logo />
+</div>
 
           {/* Desktop Navigation */}
           <nav className="hidden items-center gap-1 lg:flex">

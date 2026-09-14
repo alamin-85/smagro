@@ -35,6 +35,9 @@ export default function  AdminDashboard() {
 
   const [users, setUsers] = useState([]);
   const [productCount, setProductCount] = useState(0);
+  const [orderCount, setOrderCount] = useState(0);
+const [totalRevenue, setTotalRevenue] = useState(0);
+const [recentOrders, setRecentOrders] = useState([]);
 
   const [loading, setLoading] =
     useState(true);
@@ -98,6 +101,75 @@ export default function  AdminDashboard() {
         const productsResponse = await fetch(
   `${API_URL}/api/products/count`
 );
+
+// =========================
+// GET ORDER COUNT
+// =========================
+const ordersResponse = await fetch(
+  `${API_URL}/api/orders/count`,
+  {
+    method: "GET",
+    credentials: "include",
+  }
+);
+
+const ordersData =
+  await ordersResponse.json();
+
+if (
+  ordersResponse.ok &&
+  ordersData.success
+) {
+  setOrderCount(
+    ordersData.count || 0
+  );
+}
+
+// =========================
+// GET TOTAL REVENUE
+// =========================
+const revenueResponse = await fetch(
+  `${API_URL}/api/orders/revenue`,
+  {
+    method: "GET",
+    credentials: "include",
+  }
+);
+
+const revenueData =
+  await revenueResponse.json();
+
+if (
+  revenueResponse.ok &&
+  revenueData.success
+) {
+  setTotalRevenue(
+    Number(revenueData.totalRevenue || 0)
+  );
+}
+
+// =========================
+// GET RECENT ORDERS
+// =========================
+const recentOrdersResponse = await fetch(
+  `${API_URL}/api/orders`,
+  {
+    method: "GET",
+    credentials: "include",
+  }
+);
+
+const recentOrdersData =
+  await recentOrdersResponse.json();
+
+if (
+  recentOrdersResponse.ok &&
+  recentOrdersData.success
+) {
+  setRecentOrders(
+    (recentOrdersData.orders || []).slice(0, 5)
+  );
+}
 
 const productsData =
   await productsResponse.json();
@@ -260,25 +332,25 @@ if (
               trend="Active"
             />
 
-            <StatCard
-              title="Total Orders"
-              value="0"
-              subtitle="Orders received"
-              icon={ShoppingBag}
-              iconBg="bg-orange-50"
-              iconColor="text-orange-600"
-              trend="Coming"
-            />
+          <StatCard
+  title="Total Orders"
+  value={orderCount}
+  subtitle="Orders received"
+  icon={ShoppingBag}
+  iconBg="bg-orange-50"
+  iconColor="text-orange-600"
+  trend="Live"
+/>
 
-            <StatCard
-              title="Total Revenue"
-              value="৳0"
-              subtitle="Overall store revenue"
-              icon={DollarSign}
-              iconBg="bg-purple-50"
-              iconColor="text-purple-600"
-              trend="Coming"
-            />
+           <StatCard
+  title="Total Revenue"
+  value={`৳${totalRevenue.toLocaleString("en-BD")}`}
+  subtitle="Overall store revenue"
+  icon={DollarSign}
+  iconBg="bg-purple-50"
+  iconColor="text-purple-600"
+  trend="Live"
+/>
           </section>
 
           {/* Quick Actions */}
@@ -404,50 +476,145 @@ if (
             />
 
             {/* Recent Orders */}
-            <div className="rounded-2xl border border-gray-200 bg-white shadow-sm">
-              <div className="flex items-center justify-between border-b border-gray-100 p-5">
-                <div>
-                  <h3 className="font-bold text-gray-900">
-                    Recent Orders
-                  </h3>
+<div className="rounded-2xl border border-gray-200 bg-white shadow-sm">
+  <div className="flex items-center justify-between border-b border-gray-100 p-5">
+    <div>
+      <h3 className="font-bold text-gray-900">
+        Recent Orders
+      </h3>
 
-                  <p className="mt-1 text-xs text-gray-500">
-                    Latest customer orders
+      <p className="mt-1 text-xs text-gray-500">
+        Latest customer orders
+      </p>
+    </div>
+
+    <Link
+      href="/admin/orders"
+      className="flex items-center gap-1 text-sm font-semibold text-green-600 hover:text-green-700"
+    >
+      View All
+      <ArrowRight size={15} />
+    </Link>
+  </div>
+
+  {recentOrders.length === 0 ? (
+    <div className="flex min-h-64 flex-col items-center justify-center p-8 text-center">
+      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-green-50 text-green-600">
+        <ShoppingBag size={25} />
+      </div>
+
+      <h4 className="mt-4 font-bold text-gray-900">
+        No orders yet
+      </h4>
+
+      <p className="mt-1 max-w-xs text-sm text-gray-500">
+        Customer orders will appear here once
+        customers start placing orders.
+      </p>
+
+      <Link
+        href="/admin/orders"
+        className="mt-5 rounded-xl bg-green-600 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-green-700"
+      >
+        Go to Orders
+      </Link>
+    </div>
+  ) : (
+    <div className="divide-y divide-gray-100">
+      {recentOrders.map((order) => {
+        const orderDate = order.createdAt
+          ? new Date(order.createdAt).toLocaleDateString(
+              "en-BD",
+              {
+                day: "2-digit",
+                month: "short",
+                year: "numeric",
+              }
+            )
+          : "N/A";
+
+        const statusStyles = {
+          pending:
+            "bg-yellow-50 text-yellow-700",
+          confirmed:
+            "bg-blue-50 text-blue-700",
+          processing:
+            "bg-purple-50 text-purple-700",
+          shipped:
+            "bg-indigo-50 text-indigo-700",
+          delivered:
+            "bg-green-50 text-green-700",
+          cancelled:
+            "bg-red-50 text-red-700",
+        };
+
+        const statusClass =
+          statusStyles[order.status] ||
+          "bg-gray-50 text-gray-700";
+
+        return (
+          <div
+            key={order._id}
+            className="p-4 transition hover:bg-gray-50"
+          >
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              
+              {/* Customer + Order */}
+              <div className="min-w-0">
+                <div className="flex items-center gap-2">
+                  <h4 className="truncate text-sm font-bold text-gray-900">
+                    {order.customer?.name ||
+                      "Unknown Customer"}
+                  </h4>
+
+                  <span
+                    className={`rounded-full px-2 py-1 text-[10px] font-bold uppercase ${statusClass}`}
+                  >
+                    {order.status || "pending"}
+                  </span>
+                </div>
+
+                <p className="mt-1 text-xs text-gray-500">
+                  Order #
+                  {order._id?.slice(-8).toUpperCase()}
+                </p>
+
+                <p className="mt-1 text-xs text-gray-400">
+                  {orderDate}
+                </p>
+              </div>
+
+              {/* Amount + View */}
+              <div className="flex items-center justify-between gap-4 sm:justify-end">
+                <div className="text-left sm:text-right">
+                  <p className="text-sm font-black text-gray-900">
+                    ৳
+                    {Number(
+                      order.total || 0
+                    ).toLocaleString("en-BD")}
+                  </p>
+
+                  <p className="mt-1 text-[11px] capitalize text-gray-400">
+                    {order.paymentMethod ||
+                      "Payment pending"}
                   </p>
                 </div>
 
                 <Link
-                  href="/admin/orders"
-                  className="flex items-center gap-1 text-sm font-semibold text-green-600 hover:text-green-700"
+                  href={`/admin/orders/${order._id}`}
+                  className="inline-flex items-center gap-1 rounded-lg border border-gray-200 px-3 py-2 text-xs font-bold text-gray-700 transition hover:border-green-300 hover:bg-green-50 hover:text-green-700"
                 >
-                  View All
-                  <ArrowRight size={15} />
-                </Link>
-              </div>
-
-              <div className="flex min-h-64 flex-col items-center justify-center p-8 text-center">
-                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-green-50 text-green-600">
-                  <ShoppingBag size={25} />
-                </div>
-
-                <h4 className="mt-4 font-bold text-gray-900">
-                  No orders yet
-                </h4>
-
-                <p className="mt-1 max-w-xs text-sm text-gray-500">
-                  Customer orders will appear
-                  here once the order management
-                  system is connected.
-                </p>
-
-                <Link
-                  href="/admin/orders"
-                  className="mt-5 rounded-xl bg-green-600 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-green-700"
-                >
-                  Go to Orders
+                  View
+                  <ArrowRight size={13} />
                 </Link>
               </div>
             </div>
+          </div>
+        );
+      })}
+    </div>
+  )}
+</div>
           </section>
         </main>
       </div>
