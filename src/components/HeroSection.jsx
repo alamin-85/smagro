@@ -6,6 +6,7 @@ import {
   Truck,
   Sparkles,
 } from "lucide-react";
+import Logo from "./Logo";
 
 export default function HeroSection() {
   return (
@@ -86,12 +87,13 @@ export default function HeroSection() {
               <div className="absolute -bottom-20 -left-20 h-64 w-64 rounded-full bg-white/10" />
 
               <div className="absolute inset-0 flex flex-col items-center justify-center px-6 text-center">
-                <div className="mb-6 flex h-24 w-24 items-center justify-center rounded-3xl bg-white/15 text-6xl shadow-xl backdrop-blur-sm">
-                  🌱
+                <div className="flex h-42 w-42 items-center justify-center rounded-full bg-white/20 text-white">
+                  {/* <Logo/> */}
+                  <img src="/logo.png" alt="SMAGRO" className="rounded-full h-full w-full object-contain" />
                 </div>
 
                 <p className="text-sm font-semibold uppercase tracking-[0.25em] text-green-100">
-                  SMAGRO
+                  {/* SMAGRO */}
                 </p>
 
                 <h2 className="mt-3 text-3xl font-extrabold text-white sm:text-4xl">

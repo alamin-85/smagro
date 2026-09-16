@@ -10,6 +10,7 @@ import {
   Save,
   Trash2,
 } from "lucide-react";
+import { uploadImage } from "@/utils/uploadImage";
 
 const API_URL =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
