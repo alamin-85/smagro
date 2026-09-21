@@ -98,7 +98,10 @@ export default function Navbar() {
       {/* Top Announcement Bar */}
       <div className="hidden bg-green-700 text-white md:block">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-2 text-sm">
-          <p><Logo/> Quality products for better farming & livestock care</p>
+          <div>
+  {/* <Logo /> */}
+  <span>Quality products for better farming & livestock care</span>
+</div>
 
           <div className="flex items-center gap-5">
             <Link

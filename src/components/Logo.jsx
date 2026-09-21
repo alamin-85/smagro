@@ -11,8 +11,7 @@ const Logo = () => {
       aria-label="SMAGRO Home"
     >
       {/* Logo Image */}
-      <div
-        className="
+      <div className="
           relative flex h-11 w-11 items-center justify-center
           overflow-hidden rounded-xl
           bg-white
