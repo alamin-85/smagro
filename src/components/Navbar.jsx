@@ -98,7 +98,7 @@ export default function Navbar() {
       {/* Top Announcement Bar */}
       <div className="hidden bg-green-700 text-white md:block">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-2 text-sm">
-          <p>🌱 Quality products for better farming & livestock care</p>
+          <p><Logo/> Quality products for better farming & livestock care</p>
 
           <div className="flex items-center gap-5">
             <Link
@@ -110,7 +110,7 @@ export default function Navbar() {
 
             <span className="flex items-center gap-1">
               <Phone className="h-3.5 w-3.5" />
-              +880 1XXX-XXXXXX
+              +880 1725 117553
             </span>
           </div>
         </div>
