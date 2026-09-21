@@ -466,9 +466,6 @@ export default function MedicineCard({ medicine }) {
           </div>
         )}
 
-        {/* ==========================================
-            WISHLIST STATUS
-        ========================================== */}
         {isWishlisted && !wishlistMessage && !wishlistError && (
           <div className="mt-3 flex items-center justify-center gap-1.5 text-xs font-medium text-red-500">
             <Heart className="h-3.5 w-3.5 fill-current" />
