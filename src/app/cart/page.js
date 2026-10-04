@@ -82,9 +82,9 @@ export default function CartPage() {
 
               {cart.map((item) => (
                 <div
-                  key={item.id}
-                  className="flex flex-col gap-5 rounded-2xl bg-white p-5 shadow-sm sm:flex-row"
-                >
+    key={item._id || item.id || item.productId || `cart-item-${index}`}
+    className="flex flex-col gap-5 rounded-2xl bg-white p-5 shadow-sm sm:flex-row"
+  >
 
                   {/* Image */}
                   <div className="relative h-32 w-full shrink-0 rounded-xl bg-gray-50 sm:w-32">
