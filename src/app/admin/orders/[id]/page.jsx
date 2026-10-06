@@ -14,6 +14,7 @@ CalendarDays,
 Trash2,
 RefreshCw,
 CheckCircle2,
+XCircle,
 } from "lucide-react";
 
 const API_URL =
@@ -38,6 +39,7 @@ const orderId = params?.id;
 const [order, setOrder] = useState(null);
 const [loading, setLoading] = useState(true);
 const [updating, setUpdating] = useState(false);
+const [paymentUpdating, setPaymentUpdating] = useState(false);
 const [deleting, setDeleting] = useState(false);
 const [error, setError] = useState("");
 
@@ -143,6 +145,80 @@ try {
 
 };
 
+/* =========================
+   UPDATE PAYMENT STATUS
+========================= */
+
+const handlePaymentStatusChange = async (
+  newPaymentStatus
+) => {
+  if (!order) return;
+
+  const currentPaymentStatus =
+    order.payment?.status ||
+    (order.paymentStatus === "paid"
+      ? "verified"
+      : order.paymentStatus || "pending");
+
+  if (
+    newPaymentStatus === currentPaymentStatus
+  ) {
+    return;
+  }
+
+  const confirmed = window.confirm(
+    newPaymentStatus === "verified"
+      ? "Are you sure you want to verify this payment?"
+      : "Are you sure you want to reject this payment?"
+  );
+
+  if (!confirmed) {
+    return;
+  }
+
+  try {
+    setPaymentUpdating(true);
+    setError("");
+
+    const response = await fetch(
+      `${API_URL}/api/orders/${order._id}/payment-status`,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          paymentStatus: newPaymentStatus,
+        }),
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        data.message ||
+          "Failed to update payment status."
+      );
+    }
+
+    setOrder(data.order);
+  } catch (error) {
+    console.error(
+      "Update payment status error:",
+      error
+    );
+
+    setError(
+      error.message ||
+        "Failed to update payment status."
+    );
+  } finally {
+    setPaymentUpdating(false);
+  }
+};
+
 const handleDelete = async () => {
 if (!order) return;
 
@@ -236,6 +312,36 @@ return "border-yellow-200 bg-yellow-50 text-yellow-700";
 }
 
 
+};
+
+const getPaymentStatusClass = (status) => {
+  switch (status) {
+    case "verified":
+    case "paid":
+      return "border-green-200 bg-green-50 text-green-700";
+
+    case "rejected":
+      return "border-red-200 bg-red-50 text-red-700";
+
+    case "pending":
+    default:
+      return "border-yellow-200 bg-yellow-50 text-yellow-700";
+  }
+};
+
+const getPaymentStatusLabel = (status) => {
+  switch (status) {
+    case "verified":
+    case "paid":
+      return "Verified / Paid";
+
+    case "rejected":
+      return "Rejected";
+
+    case "pending":
+    default:
+      return "Pending";
+  }
 };
 
 if (loading) {
@@ -514,29 +620,146 @@ return ( <div className="min-h-screen bg-gray-50 px-6 py-8"> <div className="mx-
             </div>
           </div>
 
-          <div className="flex items-start gap-3">
-            <CreditCard
-              size={18}
-              className="mt-0.5 text-gray-400"
-            />
+{/* Payment Information */}
+<div className="flex items-start gap-3">
+  <CreditCard
+    size={18}
+    className="mt-0.5 text-gray-400"
+  />
 
-            <div>
-              <p className="text-xs font-medium text-gray-400">
-                Payment
-              </p>
+  <div className="w-full">
+    <p className="text-xs font-medium text-gray-400">
+      Payment
+    </p>
 
-              <p className="mt-1 font-semibold text-gray-900">
-                {order.paymentMethod ||
-                  "—"}
-              </p>
+    {/* Payment Method */}
+    <p className="mt-1 font-semibold capitalize text-gray-900">
+      {order.payment?.methodName ||
+        order.paymentMethod ||
+        "Cash on Delivery"}
+    </p>
 
-              <p className="mt-1 text-sm capitalize text-gray-500">
-                Status:{" "}
-                {order.paymentStatus ||
-                  "pending"}
-              </p>
-            </div>
-          </div>
+    {/* Payment Amount */}
+    <p className="mt-1 text-sm text-gray-600">
+      Amount:{" "}
+      <span className="font-semibold text-gray-900">
+        ৳
+        {Number(
+          order.payment?.amount ||
+            order.total ||
+            0
+        ).toLocaleString("en-BD")}
+      </span>
+    </p>
+
+    {/* Transaction ID */}
+    {order.payment?.transactionId && (
+      <div className="mt-3 rounded-xl border border-gray-100 bg-gray-50 p-3">
+        <p className="text-xs font-medium uppercase tracking-wide text-gray-400">
+          Transaction ID
+        </p>
+
+        <p className="mt-1 break-all font-mono text-sm font-semibold text-gray-900">
+          {order.payment.transactionId}
+        </p>
+      </div>
+    )}
+
+    {/* Payment Status */}
+    <div className="mt-3">
+      <p className="text-xs font-medium text-gray-400">
+        Payment Status
+      </p>
+
+      <span
+        className={`mt-2 inline-flex rounded-full border px-3 py-1.5 text-xs font-bold ${getPaymentStatusClass(
+          order.payment?.status ||
+            order.paymentStatus ||
+            "pending"
+        )}`}
+      >
+        {getPaymentStatusLabel(
+          order.payment?.status ||
+            order.paymentStatus ||
+            "pending"
+        )}
+      </span>
+    </div>
+
+    {/* Payment Actions */}
+    {(
+      order.payment?.method ||
+      order.paymentMethod ||
+      "cod"
+    ).toLowerCase() !== "cod" && (
+      <div className="mt-4 flex flex-wrap gap-2">
+        <button
+          type="button"
+          onClick={() =>
+            handlePaymentStatusChange(
+              "verified"
+            )
+          }
+          disabled={
+            paymentUpdating ||
+            order.payment?.status ===
+              "verified"
+          }
+          className="inline-flex items-center gap-2 rounded-lg bg-green-600 px-3 py-2 text-xs font-bold text-white transition hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          <CheckCircle2 size={15} />
+
+          {paymentUpdating
+            ? "Updating..."
+            : "Verify Payment"}
+        </button>
+
+        <button
+          type="button"
+          onClick={() =>
+            handlePaymentStatusChange(
+              "rejected"
+            )
+          }
+          disabled={
+            paymentUpdating ||
+            order.payment?.status ===
+              "rejected"
+          }
+          className="inline-flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-bold text-red-700 transition hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          <XCircle size={15} />
+
+          {paymentUpdating
+            ? "Updating..."
+            : "Reject Payment"}
+        </button>
+      </div>
+    )}
+
+    {/* COD Message */}
+    {(
+      order.payment?.method ||
+      order.paymentMethod ||
+      "cod"
+    ).toLowerCase() === "cod" && (
+      <p className="mt-3 rounded-lg bg-gray-50 px-3 py-2 text-xs text-gray-500">
+        Cash on Delivery — payment will be
+        collected upon delivery.
+      </p>
+    )}
+
+    {/* Verification Info */}
+    {order.payment?.verifiedAt && (
+      <p className="mt-3 text-xs text-gray-500">
+        Verified on{" "}
+        {formatDate(
+          order.payment.verifiedAt
+        )}
+      </p>
+    )}
+  </div>
+</div>
 
           <div className="flex items-start gap-3">
             <CalendarDays
