@@ -505,8 +505,6 @@ export default function AdminOrdersPage() {
                           </span>
                         </td>
 
-                        {/* Payment */}
-
                         <td className="px-5 py-4">
                           <p className="font-medium text-gray-700">
                             {order.paymentMethod ||
